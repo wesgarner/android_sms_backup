@@ -145,15 +145,33 @@ public class SmsSyncService extends Service {
                                 throw new GeneralErrorException(SmsSyncService.this,
                                         R.string.err_first_sync_needs_skip_flag, null);
                             }
-                            boolean skipMessages = intent.getBooleanExtra(Consts.KEY_SKIP_MESSAGES,
-                                    false);
+     /**
+ <h2>Sync or skip?</h2>
+     * <p>
+     * <code>skipMessages</code>: If this parameter is <code>true</code>, all
+     * current messages stored on the device are skipped and marked as "synced".
+     * Future backups will ignore these messages and only messages arrived
+     * afterwards will be sent to the server.
+     * </p>
+     * 
+     * @param skipMessages whether to skip all messages on this device.
+*/
+                            if (intent.getBooleanExtra(Consts.KEY_SKIP_MESSAGES, false) {
+			         // Only update the max synced ID, do not really sync.
+		                updateMaxSyncedDate(getMaxItemDate());
+		                PrefStore.setLastSync(this);
+    		               sItemsToSync = 0;
+		               sCurrentSyncedItems = 0;
+		               updateState(SmsSyncState.IDLE);
+		               Log.i(Consts.TAG, "All messages skipped.");
+			    } else {
                             int numRetries = intent.getIntExtra(Consts.KEY_NUM_RETRIES, 0);
                             GeneralErrorException lastException = null;
                             
                             // Try sync numRetries + 1 times.
                             while (numRetries >= 0) {
                                 try {
-                                    backup(skipMessages);
+                                    backup();
                                     break;
                                 } catch (GeneralErrorException e) {
                                     Log.w(Consts.TAG, e.getMessage());
@@ -170,6 +188,7 @@ public class SmsSyncService extends Service {
                             if (lastException != null) {
                                 throw lastException;
                             }
+			  } // else { } for skipMessages
                         } catch (GeneralErrorException e) {
                             Log.i(Consts.TAG, "", e);
                             sLastError = e.getLocalizedMessage();
@@ -199,7 +218,7 @@ public class SmsSyncService extends Service {
      * </p>
      * <h2>Typical flow</h2>
      * <p>
-     * This is a typical sync flow (for <code>skipMessages == false</code>):
+     * This is a typical sync flow:
      * </p>
      * <ol>
      * <li>{@link SmsSyncState#CALC}: The list of messages requiring a sync is
@@ -224,19 +243,10 @@ public class SmsSyncService extends Service {
      * or password are unset, a {@link GeneralErrorException} is thrown.
      * </p>
      * 
-     * <h2>Sync or skip?</h2>
-     * <p>
-     * <code>skipMessages</code>: If this parameter is <code>true</code>, all
-     * current messages stored on the device are skipped and marked as "synced".
-     * Future backups will ignore these messages and only messages arrived
-     * afterwards will be sent to the server.
-     * </p>
-     * 
-     * @param skipMessages whether to skip all messages on this device.
      * @throws GeneralErrorException Thrown when there there was an error during
      *             sync.
      */
-    private void backup(boolean skipMessages) throws GeneralErrorException,
+    private void backup() throws GeneralErrorException,
             AuthenticationErrorException {
         Log.i(Consts.TAG, "Starting backup...");
         sCanceled = false;
@@ -253,17 +263,6 @@ public class SmsSyncService extends Service {
         sItemsToSync = 0;
         sCurrentSyncedItems = 0;
         
-        if (skipMessages) {
-            // Only update the max synced ID, do not really sync.
-            updateMaxSyncedDate(getMaxItemDate());
-            PrefStore.setLastSync(this);
-            sItemsToSync = 0;
-            sCurrentSyncedItems = 0;
-            updateState(SmsSyncState.IDLE);
-            Log.i(Consts.TAG, "All messages skipped.");
-            return;
-        }
-
         Cursor items = getItemsToSync();
         int maxItemsPerSync = PrefStore.getMaxItemsPerSync(this);
         sItemsToSync = Math.min(items.getCount(), maxItemsPerSync);
