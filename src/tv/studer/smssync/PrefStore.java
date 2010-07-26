@@ -45,6 +45,9 @@ public class PrefStore {
     /** Preference for syncing at incoming message or timed sync. */
     static final String PREF_ENABLE_TIME_SYNC= "enable_time_sync";
     
+    /** Preference for time sync reptition time (in hours). */
+    static final String PREF_TIME_SYNC_CRON= "time_sync_cron";
+    
     /** Preference key for the timeout between an SMS is received and the scheduled sync. */
     static final String PREF_INCOMING_TIMEOUT_SECONDS = "incoming_timeout_seconds";
     
@@ -71,6 +74,9 @@ public class PrefStore {
 
     /** Default value for {@link PrefStore#PREF_ENABLE_TIME_SYNC}. */
     static final boolean DEFAULT_ENABLE_TIME_SYNC = false;
+
+    /** Default value for {@link PrefStore#PREF_TIME_SYNC_CRON}. */
+    static final int DEFAULT_TIME_SYNC_CRON = 6;
 
     /** Default value for {@link PrefStore#PREF_INCOMING_TIMEOUT_SECONDS}. */
     static final int DEFAULT_INCOMING_TIMEOUT_SECONDS = 20;
@@ -195,6 +201,11 @@ public class PrefStore {
         Editor editor = getSharedPreferences(ctx).edit();
         editor.putBoolean(PREF_ENABLE_TIME_SYNC, enableTimeSync);
         editor.commit();
+    }
+
+    static int getTimeSyncHours(Context ctx) {
+       return getSharedPreferences(ctx).getInt(PREF_TIME_SYNC_CRON,
+               DEFAULT_TIME_SYNC_CRON);
     }
     
     static int getIncomingTimeoutSecs(Context ctx) {
