@@ -41,6 +41,9 @@ public class PrefStore {
     
     /** Preference key for storing whether to enable auto sync or not. */
     static final String PREF_ENABLE_AUTO_SYNC = "enable_auto_sync";
+
+    /** Preference for syncing at incoming message or timed sync. */
+    static final String PREF_ENABLE_TIME_SYNC= "enable_time_sync";
     
     /** Preference key for the timeout between an SMS is received and the scheduled sync. */
     static final String PREF_INCOMING_TIMEOUT_SECONDS = "incoming_timeout_seconds";
@@ -64,8 +67,11 @@ public class PrefStore {
     static final String DEFAULT_IMAP_FOLDER = "SMS";
     
     /** Default value for {@link PrefStore#PREF_ENABLE_AUTO_SYNC}. */
-    static final boolean DEFAULT_ENABLE_AUTO_SYNC = true;
-    
+    static final boolean DEFAULT_ENABLE_AUTO_SYNC = true;    
+
+    /** Default value for {@link PrefStore#PREF_ENABLE_TIME_SYNC}. */
+    static final boolean DEFAULT_ENABLE_TIME_SYNC = false;
+
     /** Default value for {@link PrefStore#PREF_INCOMING_TIMEOUT_SECONDS}. */
     static final int DEFAULT_INCOMING_TIMEOUT_SECONDS = 20;
     
@@ -173,6 +179,21 @@ public class PrefStore {
     static void setEnableAutoSync(Context ctx, boolean enableAutoSync) {
         Editor editor = getSharedPreferences(ctx).edit();
         editor.putBoolean(PREF_ENABLE_AUTO_SYNC, enableAutoSync);
+        editor.commit();
+    }
+
+    static boolean isEnableTimeSync(Context ctx) {
+        return getSharedPreferences(ctx).getBoolean(PREF_ENABLE_TIME_SYNC,
+                DEFAULT_ENABLE_TIME_SYNC);
+    }
+    
+    static boolean isEnableTimeSyncSet(Context ctx) {
+        return getSharedPreferences(ctx).contains(PREF_ENABLE_TIME_SYNC);
+    }
+    
+    static void setEnableTimeSync(Context ctx, boolean enableTimeSync) {
+        Editor editor = getSharedPreferences(ctx).edit();
+        editor.putBoolean(PREF_ENABLE_TIME_SYNC, enableTimeSync);
         editor.commit();
     }
     
